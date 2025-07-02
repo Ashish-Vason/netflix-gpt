@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useReducer, useRef, useState } from 'react';
+import { validateData } from '../utilities/validate';
 import Header from './Header';
 
 const Login = () => {
   const [isSignUpPage, setIsSignUpPage] = useState(false);
+  const [error, setError] = useState('');
+  const email = useRef(null);
+  const password = useRef(null);
+
+  const handleButtonClick = () => {
+    const isValid = validateData(email.current.value, password.current.value);
+    console.log(isValid);
+    setError(isValid);
+  };
+
   return (
     <div className="m-3 mx-5 background-image: linear-gradient(to bottom,black )">
       <Header />
@@ -16,7 +27,7 @@ const Login = () => {
         <p className="text-xl text-white">
           {isSignUpPage ? 'Sign Up' : 'Sign In'}
         </p>
-        <form className="text-white">
+        <form className="text-white" onSubmit={(e) => e.preventDefault()}>
           {isSignUpPage && (
             <input
               className="bg-gray-700 my-3 w-full text-sm p-3 rounded"
@@ -25,16 +36,23 @@ const Login = () => {
             />
           )}
           <input
+            ref={email}
             className="bg-gray-700 my-3 w-full text-sm p-3 rounded"
             type="text"
             placeholder="Email Address"
           />
           <input
+            ref={password}
             className="bg-gray-700 my-3 w-full text-sm p-3 rounded"
             type="password"
             placeholder="Password"
           />
-          <button className="w-full bg-red-600 p-2 my-5 rounded">
+          {error && <p className="text-red-600 text-lg font-bold">{error}</p>}
+
+          <button
+            className="w-full bg-red-600 p-2 my-5 rounded"
+            onClick={() => handleButtonClick()}
+          >
             {isSignUpPage ? 'Sign Up' : 'Sign In'}
           </button>
           <p
