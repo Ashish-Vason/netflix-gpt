@@ -1,21 +1,81 @@
 import React, { useReducer, useRef, useState } from 'react';
 import { validateData } from '../utilities/validate';
 import Header from './Header';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../utilities/firbase';
+import { useDispatch } from 'react-redux';
+import { addUser } from '../utilities/userSlice';
 
 const Login = () => {
   const [isSignUpPage, setIsSignUpPage] = useState(false);
   const [error, setError] = useState('');
   const email = useRef(null);
   const password = useRef(null);
+  const name = useRef(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleButtonClick = () => {
     const isValid = validateData(email.current.value, password.current.value);
-    console.log(isValid);
     setError(isValid);
+    if (isValid == null) {
+      if (isSignUpPage) {
+        // sign up logic
+        createUserWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            // Signed up
+            const user = userCredential.user;
+            updateProfile(user, {
+              displayName: name.current.value,
+            })
+              .then(() => {
+                const { email, uid, displayName } = auth.currentUser;
+                dispatch(addUser({ email, uid, displayName }));
+                console.log('Profile Updated');
+              })
+              .catch((error) => {
+                console.log('Error', error.message);
+                return;
+              });
+            console.log(user);
+            navigate('/browse');
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setError(errorCode + ':' + errorMessage);
+          });
+      } else {
+        signInWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            const user = userCredential.user;
+            console.log(user);
+            navigate('/browse');
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setError(errorCode + ':' + errorMessage);
+          });
+      }
+    }
   };
 
   return (
-    <div className="m-3 mx-5 background-image: linear-gradient(to bottom,black )">
+    <div className="">
       <Header />
       <div className="absolute top-0 left-0">
         <img
@@ -30,6 +90,7 @@ const Login = () => {
         <form className="text-white" onSubmit={(e) => e.preventDefault()}>
           {isSignUpPage && (
             <input
+              ref={name}
               className="bg-gray-700 my-3 w-full text-sm p-3 rounded"
               type="text"
               placeholder="Name"

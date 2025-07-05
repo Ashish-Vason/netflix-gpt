@@ -1,9 +1,25 @@
+import { signOut } from 'firebase/auth';
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { auth } from '../utilities/firbase';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const user = useSelector((store) => store.user);
+  const handleSignOut = () => {
+    signOut(auth)
+      .then(() => {
+        navigate('/');
+      })
+      .catch((error) => {
+        console.log(error);
+        navigate('/error');
+      });
+  };
   return (
-    <div className="fixed top-5 left-10 z-100 bg-gradient-to-b from-black ">
-      <div className="svg-icon">
+    <div className="fixed z-100 bg-gradient-to-b from-black p-5 w-full flex justify-between items-centerbackground-image: linear-gradient(to bottom,black )">
+      <div className="svg-icon top-5 left-10">
         <svg
           viewBox="0 0 111 30"
           version="1.1"
@@ -18,6 +34,18 @@ const Header = () => {
           </g>
         </svg>
       </div>
+      {user && (
+        <div className="">
+          <img
+            src="https://wallpapers.com/images/hd/netflix-profile-pictures-5yup5hd2i60x7ew3.jpg"
+            className="w-12 h-12"
+            alt="profilePic"
+          />
+          <button className="text-white font-bold" onClick={handleSignOut}>
+            Sign Out
+          </button>
+        </div>
+      )}
     </div>
   );
 };
